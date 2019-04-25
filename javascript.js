@@ -11,7 +11,7 @@ var database=firebase.database();
 
 var train;
 var destination;
-var firsttime;
+var firsttime;//Unfortunately the result is unusable.
 var frequency;
 var firsthour;//Useless variable, hoped to use it to convert firsttime to something usable.
 
@@ -36,8 +36,18 @@ database.ref().on("child_added", function(snapshot) {
   console.log(snapshot.val());
   console.log(snapshot.val().train);
   console.log(snapshot.val().destination);
-  console.log(snapshot.val().firsttime);
-  console.log(snapshot.val().frequency);
+  //console.log(snapshot.val().firsttime);
+  //console.log(snapshot.val().frequency);
+////Convert first train time to hours and minutes 
+  var basetime=snapshot.val().firsttime;
+  var hourFormat="HH:mm";
+  var timeFormat=moment(basetime,hourFormat);
+  console.log("First time: "+timeFormat.format("HH:mm"));
+  console.log(timeFormat.fromNow());
+  var baseMin=(snapshot.val().frequency);
+  var minFormat="mm";
+  var minuteFormat=moment(baseMin,minFormat);
+  console.log(minuteFormat.format("mm"));
 
   var tRow=$("<tr>");
   var trainTd=$("<td>").text(snapshot.val().train);
