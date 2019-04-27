@@ -11,15 +11,14 @@ var database=firebase.database();
 
 var train;
 var destination;
-var firsttime;//Unfortunately the result is unusable.
+var firsttime;
 var frequency;
-var firsthour;//Useless variable, hoped to use it to convert firsttime to something usable.
 
 $("#add-train").on("click",function(event){
   event.preventDefault();
   train=$("#train-input").val().trim();
   destination=$("#destination-input").val().trim();
-  firsttime=$("#time-input").val();//I can't use this for time calculations.
+  firsttime=$("#time-input").val();
   frequency=$("#frequency-input").val();
 
   
@@ -36,27 +35,32 @@ database.ref().on("child_added", function(snapshot) {
   console.log(snapshot.val());
   console.log(snapshot.val().train);
   console.log(snapshot.val().destination);
-  //console.log(snapshot.val().firsttime);
-  //console.log(snapshot.val().frequency);
 ////Convert first train time to hours and minutes 
   var basetime=snapshot.val().firsttime;
-  var hourFormat="HH:mm";
-  var timeFormat=moment(basetime,hourFormat);
-  console.log("First time: "+timeFormat.format("HH:mm"));
-  console.log(timeFormat.fromNow());
-  var baseMin=(snapshot.val().frequency);
-  var minFormat="mm";
-  var minuteFormat=moment(baseMin,minFormat);
-  console.log(minuteFormat.format("mm"));
+  var timeFormat=moment(basetime,"HH:mm").subtract(1,"years");
+  console.log(timeFormat);
+  var currentTime=moment();
+  console.log("CURRENT TIME: " + moment(currentTime).format("hh:mm"));
+  var frequency=(snapshot.val().frequency);
+  var minuteFormat=moment(frequency,"mm");
+  console.log("Frequency (min): "+minuteFormat.format("mm"));
+  //Insert calculations for Next Arrival Time and Minutes Away here.
+  var diffTime = moment().diff(moment(timeFormat), "minutes");
+  var tRemainder = diffTime % frequency;
+  console.log(tRemainder);
+  var eta = frequency - tRemainder;
+  var nextTrain = moment().add(eta, "minutes");
+  console.log("ARRIVAL TIME: " + moment(nextTrain).format("hh:mm"));
 
   var tRow=$("<tr>");
   var trainTd=$("<td>").text(snapshot.val().train);
   var destTd=$("<td>").text(snapshot.val().destination);
-  var freqTd=$("<td>").text(snapshot.val().frequency);
-  var arriveTd=$("<td>").text("Unavailable");//Time calculation results go here...
-  var etaTd=$("<td>").text("Unavailable");//...IF I HAD ANY
+  var freqTd=$("<td>").text(frequency);
+  var arriveTd=$("<td>").text(moment(nextTrain).format("HH:mm"));//"Next Arrival Time" calculations output here
+  var etaTd=$("<td>").text(eta);//"Minutes Away" calculations output here
   tRow.append(trainTd, destTd, freqTd,arriveTd, etaTd);
   $("#traintable").append(tRow);
+  
 
   // Handle the errors
 }, function(errorObject) {
